@@ -53,7 +53,7 @@ fromHsString path = do
         process _ _ _ = error "INTERNAL ERROR: Not expected pattern in process."                                            
 
 
-        -- Validates and parses parameters. 
+        -- Validates and parses parameters. Collects set of variable names to prevent duplicates. 
         validPar :: [HsPat] -> Name -> ([Pat], Set.Set Name)
         validPar (par:xs) name =
           let (lst, set) = validPar xs name
@@ -73,7 +73,7 @@ fromHsString path = do
         extractExpr _ = error "INTERNAL ERROR: Not expected pattern in extractExpr."
                                                 
 
-        -- Extracts parameters from Hs.
+        -- Extracts single parameter from HsPat. Checks for duplicates in names of variables.
         extractPat :: HsPat -> Set.Set Name -> (Pat, Set.Set Name)
         extractPat (HsPParen par) set = extractPat par set
         extractPat (HsPApp (UnQual (HsIdent name)) lst) set = 
@@ -81,6 +81,7 @@ fromHsString path = do
               in
               (PApp name lst', set')
           where 
+            -- Extracts list of HsPat into list of Pat. Adds variable names to set.
             extractList :: [HsPat] -> Set.Set Name -> ([Pat], Set.Set Name)
             extractList (x:xs) set' = 
               let (new_lst, new_set) = extractList xs set'
@@ -89,7 +90,8 @@ fromHsString path = do
                 (new_el:new_lst, ext_set)
             extractList _ set' = ([], set')
 
-        extractPat (HsPVar (HsIdent name)) set = case Set.member name set of
-                                                  True -> error ("Two variables with the same name: " ++ name ++ " in one definition.")
-                                                  False -> (PVar name, Set.insert name set) 
+        extractPat (HsPVar (HsIdent name)) set = 
+          case Set.member name set of
+            True -> error ("Two variables with the same name: "  ++ name ++ " in one definition.")
+            False -> (PVar name, Set.insert name set) 
         extractPat _ _ = error "INTERNAL ERROR: Not expected pattern in extractPat."

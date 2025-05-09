@@ -24,7 +24,7 @@ type ExprMap = Map.Map Name Expr
 steps :: Int
 steps = 29
 
-
+-- TEMP SECTION ------------------------------------------------------------------------
 instance Show Pat where
     show (PVar name) = name
     show (PApp name pats) =
@@ -33,8 +33,7 @@ instance Show Pat where
 instance Show Match where
     show (Match name pats rhs) =
         name ++ " " ++ unwords (map show pats) ++ " = " ++ show rhs
-
-
+-- TEMP SECTION ------------------------------------------------------------------------
 
 instance Show Expr where
     showsPrec _ (Var name) = showString name
@@ -43,7 +42,7 @@ instance Show Expr where
         showParen (p > 10) (showsPrec 9 e1 . showString " " . showsPrec 11 e2)
 
 
--- Inputs Match list into Map checking for duuplicates of main and different argument numbers.
+-- Inputs Match list into Map checking for duplicates of main and different parameter number.
 matchToMap :: [Match] -> DefMap
 matchToMap lst = foldr change Map.empty lst
     where
