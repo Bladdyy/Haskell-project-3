@@ -24,6 +24,44 @@ type ExprMap = Map.Map Name Expr
 steps :: Int
 steps = 29
 
+
+-- SnocList definitions.
+
+newtype SnocList a = SnocList {unSnocList :: [a]}
+
+toList :: SnocList a -> [a]
+toList (SnocList lst) = reverse lst
+
+fromList :: [a] -> SnocList a 
+fromList lst = SnocList (reverse lst)
+
+snoc :: SnocList a -> a -> SnocList a
+snoc (SnocList lst) el = SnocList (el : lst) 
+
+instance Eq a => Eq (SnocList a) where
+  xs == ys = toList xs == toList ys
+
+instance Show a => Show (SnocList a) where
+  show xs = show (toList xs)
+
+instance Semigroup (SnocList a) where
+  SnocList xs <> SnocList ys = SnocList (ys ++ xs)
+
+instance Monoid (SnocList a) where
+  mempty = SnocList []
+
+instance Functor SnocList where
+  fmap f (SnocList xs) = SnocList (map f xs)
+
+instance Applicative SnocList where
+  pure x = SnocList [x]
+  SnocList fs <*> SnocList xs = SnocList [f x | f <- fs, x <- xs]
+
+instance Alternative SnocList where
+    empty = SnocList []
+    Snoclist xs <|> Snoclist ys = Snoclist (xs ++ ys)
+
+
 -- TEMP SECTION ------------------------------------------------------------------------
 instance Show Pat where
     show (PVar name) = name
