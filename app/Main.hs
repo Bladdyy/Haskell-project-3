@@ -23,11 +23,19 @@ main = do
                  out <- fromHsString path
                  let mapping = matchToMap out
                  print mapping
-                 -- case Map.lookup "main" mapping of
-                 --   Nothing -> error "ERROR: No comibnator named main."
-                 --   Just (Def _ _ expr) -> 
-                 --          do
-                 --            mapM_ print out
-                 --            putStrLn "------------------------------------------------------------"
-                 --            print expr
-                 --            iterateSteps steps expr mapping
+                 case Map.lookup "main" mapping of
+                   Nothing -> error "ERROR: No comibnator named main."
+                   Just (Def [Match _ _ expr]) ->
+                      let x = fromList [(Var "main", Top)]
+                          y = snoc x (expr, Top)
+                          v = snoc y (left (expr, Top))
+                          g = snoc v (left(right (expr, Top)))
+                          z = snoc g (right(right (expr, Top)))
+
+                      in
+                      print (fmap showLoc z)
+                          -- do
+                          --   mapM_ print out
+                          --   putStrLn "------------------------------------------------------------"
+                          --   print expr
+                          --   iterateSteps steps expr mapping

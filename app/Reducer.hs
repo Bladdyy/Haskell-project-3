@@ -3,6 +3,8 @@ import qualified Data.Map as Map
 import Common
 
 
+
+
 -- -- Performs one step of reduction.
 -- rstep :: Expr -> DefMap -> (Maybe Expr, Int)
 -- rstep expr mapping = let (new_expr, _, code, _) = findReduce expr 0 Nothing
