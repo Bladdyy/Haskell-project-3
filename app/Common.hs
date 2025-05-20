@@ -24,7 +24,8 @@ type ExprMap = Map.Map Name Expr
 
 steps, internal_steps :: Int
 steps = 29
-internal_steps = 29
+internal_steps = 15
+max_depth = 5
 
 -- State description
 
@@ -32,9 +33,8 @@ data StateDesc = StateDesc
   { state     :: Loc
   , history   :: SnocList Loc
   , fuel      :: Int
-  , internal  :: Bool
+  , depth     :: Int
   , defs      :: DefMap
-  , args      :: Int
   }
 
 

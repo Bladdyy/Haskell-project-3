@@ -37,7 +37,7 @@ main = do
                       -- print (fmap showLoc z)
                       -- print (checkPattern (Con "S" :$ Con "Z" :$ Var "x") (PVar "a") Map.empty)
 
-                      print (checkPattern (Con "S" :$ Con "S" :$ Con "Z" :$ Var "x") (PApp "S" [PVar "a"]) Map.empty)
+                      print (checkPattern (Con "S" :$ (Con "S" :$ (Con "Z" :$ Var "x")) :$ Var "x") (PApp "S" [PApp "S" [PVar "x"], PVar "a"]) Map.empty)
 
 
 

@@ -2,88 +2,91 @@ module Reducer where
 import qualified Data.Map as Map
 import Common
 
--- Performs a step of reduction on given state.
-rstep :: StateDesc -> (StateDesc, Bool)
--- If not beginning of expression.
-rstep (StateDesc (Loc (e1 :$ e2) ctx) his f int mapping args) = 
-    StateDesc (left (Loc (e1 :$ e2) ctx)) his f int mapping (args + 1)
--- Beginning of expression.
-rstep (StateDesc (Loc e ctx) his f int mapping args) = 
-    -- Check for matches for this expression.
-    case Map.lookup name mapping of
-        Def xs -> if length xs >= args then findReduce (StateDesc (Loc e1 : e2) his (f - 1) int mapping args) xs
-                  else (StateDesc (Loc e ctx) his f int mapping args, False)
-        -- No matches.
-        _ -> (StateDesc (Loc e ctx) his f int mapping args, False) -- TODO possibly error required.
-    where
+-- -- Performs a step of reduction on given state.
+-- rstep :: StateDesc -> Int -> Maybe StateDesc
+-- -- If not beginning of expression.
+-- rstep (StateDesc (e1 :$ e2, ctx) his f depth mapping) args = 
+--     rstep (StateDesc (left (e1 :$ e2, ctx)) his f depth mapping) (args + 1)
 
-    -- Checks any pattern matches expression in given order. 
-    findReduce :: StateDesc -> [Match] -> (StateDesc, Bool)
-    findReduce (StateDesc loc his f int mapping args) (x:xs) = 
-        -- If already in internal matching.
-        if int then 
-          let val = checkArgs (StateDesc loc his f int mapping 0) x
-        -- If matching first level argument.
-        else 
-          let val = checkArgs (StateDesc loc mempty internal_steps True mapping 0) x
-        in
-        case val of
-          (_, False) -> findReduce (StateDesc loc his f int mapping args) xs
-          (state, True) -> (state, True) -- TODO: potentially add histories.
-    
-    -- No pattern matches
-    findReduce state _ = (state, False)
+-- -- Beginning of expression.
+-- rstep (StateDesc (e, ctx) his f depth mapping) args = 
+--     if depth == max_depth then Nothing
+--     else 
+--       -- Check for matches for this expression.
+--       case Map.lookup name mapping of
+--           Def xs -> if length xs >= args then 
+--                         findReduce (StateDesc (e1 :$ e2, ctx) his (f - 1) depth mapping) xs
+--                     else Nothing
+--           -- No matches.
+--           _ -> Nothing
+--       where
 
-    -- Checks one pattern with Loc.
-    checkArgs :: StateDesc -> Match -> (StateDesc, Bool)
-    checkArgs (StateDesc loc his f int mapping args) (Match _ pats expr) = 
-        case matchArgs (StateDesc (top loc) his f int mapping args) pats Map.empty of
-          -- Pattern not matched.
-          (_, False) -> ((StateDesc loc his f int mapping args), False)
-          -- Pattern matched.
-          (correct_mapping, True) -> (reduce (StateDesc (top loc) his f int mapping args) correct_mapping expr pats)
+--     -- Checks any pattern matches expression in given order. 
+--     findReduce :: StateDesc -> [Match] -> Maybe StateDesc
+--     findReduce state (Match _ pats expr:xs) = 
+--         case matchPats state pats expr Map.empty of
+--           (_, False) -> findReduce state xs
+--           (correct_mapping, True) -> 
+--               Just (reduce (StateDesc (up loc) his f depth mapping) correct_mapping expr (length pats))
 
-    -- Checks every parameter in patter with next Loc arguments.
-    matchArgs :: StateDesc -> [Pat] -> ExprMap -> (ExprMap, Bool)
-    matchArgs (StateDesc (Loc e1 :$ e2) his f int mapping args) (pat:ps) expr_map =
-      case checkPattern e2 pat expr_map of
-        -- Incorrect matching. Reduce if possible then check again.
-        (_, False) -> ... -- TODO: Match with given pat until no fuel or cant reduce or matched.
-        -- Correctly matched parameter. Go to the next one.
-        (new_mapping, True) -> matchArgs (StateDesc (top (Loc (e1 :$ e2) ctx)) his f int mapping args) ps new_mapping
+--     -- No pattern matches
+--     findReduce state _ = Nothing
 
-    -- All parameters matched.    
-    matchArgs _ [] expr_map = (expr_map, True)
+--     -- Checks every parameter in pattern with corresponding expression.
+--     matchPats :: StateDesc -> [Pat] -> Expr -> ExprMap -> (ExprMap, Bool)
+--     matchPats (StateDesc (e1, L cxt e2) his f depth mapping) (pat:ps) expr_result expr_map =
+--       case checkPattern e2 pat expr_map of
+--         -- Incorrect matching. Reduce if possible then check again.
+--         (_, False) -> case forceCheck (StateDesc (right (up (e, L cxt expr))) his f depth mapping) pat expr_map of
 
-    
+--         -- Correctly matched parameter. Go to the next one.
+--         (new_mapping, True) -> matchPats (StateDesc (up (e, L cxt expr)) his f depth mapping) ps new_mapping
 
-    -- Checks if pattern matches for expr. If the pattern is correct: passes correct mapping.  TODO (maybe change it into zipper.)
+--     -- All parameters matched.    
+--     matchPats _ [] expr_map = (expr_map, True)
+--     matchPats _ _ expr_map = (expr_map, False)
 
-    checkPattern :: Expr -> Pat -> ExprMap -> (ExprMap, Bool)
-    checkPattern e pat maps = comp (expToLst e []) pat maps
-      where
-      -- Compares one parameter with expression.
-      comp :: [Expr] -> Pat -> ExprMap -> (ExprMap, Bool) 
-      comp (Con e:es) (PApp name lst) mapping = if e == name && length es == length lst then compLsts es lst mapping
-                                                else (mapping, False)
-      comp (x:xs) (PVar name) mapping = (Map.insert name (lstToExp x xs) mapping, True)
-      comp _ _ mapping = (mapping, False) 
+--     forceCheck :: StateDesc -> Pat -> ExprMap ->
+--     forceCheck (StateDesc (e1, R e2 cxt) his f depth mapping) pat expr_map = 
+--       if depth == 0 then let val = rstep (StateDesc (e1, R e2 cxt) mempty internal_steps (depth + 1) mapping)
+--       else let val = rstep (StateDesc (e1, R e2 cxt) his f (depth + 1) mapping)
+--       case rstep state of
+--         Nothing -> Nothing
+--         Just (StateDesc (new_e1, R new_e new_cxt) new_his new_f new_depth new_mapping) -> 
+--           case checkPattern new_e1 pat expr_map of
+--             (new_mapping, True) -> (new_mapping, True) -- New history add also, Not only mapping.
+--             (_, False) -> forceCheck (StateDesc (new_e1, R new_e new_cxt) new_his new_f new_depth new_mapping) pat expr_map -- Check for errors here! (Arguments might be wrong)
 
-      -- Compares a whole list of parameters inside of a parameter.
-      compLsts :: [Expr] -> [Pat] -> ExprMap -> (ExprMap, Bool)
-      compLsts (x:xs) (y:ys) mapping = case checkPattern x y mapping of 
-                                   (new_mapping, False) -> (new_mapping, False)
-                                   (new_mapping, True) -> compLsts xs ys new_mapping
-      compLsts _ _ mapping = (mapping, True)
 
-      -- Changes Expr to list.
-      expToLst :: Expr -> [Expr] -> [Expr]
-      expToLst (e1 :$ e2) lst = expToLst e1 (e2:lst)
-      expToLst e lst = e:lst
 
-      lstToExp :: Expr -> [Expr] -> Expr
-      lstToExp e0 (e1:e2) = lstToExp (e0 :$ e1) e2
-      lstToExp e _ = e
+
+-- Checks if pattern matches for expr. If the pattern is correct: passes correct mapping.  TODO (maybe change it into zipper.)
+
+checkPattern :: Expr -> Pat -> ExprMap -> (ExprMap, Bool)
+checkPattern e pat maps = comp (expToLst e []) pat maps
+  where
+  -- Compares one parameter with expression.
+  comp :: [Expr] -> Pat -> ExprMap -> (ExprMap, Bool) 
+  comp (Con e:es) (PApp name lst) mapping = if e == name && length es == length lst then compLsts es lst mapping
+                                            else (mapping, False)
+  comp (x:xs) (PVar name) mapping = (Map.insert name (lstToExp x xs) mapping, True)
+  comp _ _ mapping = (mapping, False) 
+
+  -- Compares a whole list of parameters inside of a parameter.
+  compLsts :: [Expr] -> [Pat] -> ExprMap -> (ExprMap, Bool)
+  compLsts (x:xs) (y:ys) mapping = case checkPattern x y mapping of 
+                               (new_mapping, False) -> (new_mapping, False)
+                               (new_mapping, True) -> compLsts xs ys new_mapping
+  compLsts _ _ mapping = (mapping, True)
+
+  -- Changes Expr to list.
+  expToLst :: Expr -> [Expr] -> [Expr]
+  expToLst (e1 :$ e2) lst = expToLst e1 (e2:lst)
+  expToLst e lst = e:lst
+
+  lstToExp :: Expr -> [Expr] -> Expr
+  lstToExp e0 (e1:e2) = lstToExp (e0 :$ e1) e2
+  lstToExp e _ = e
 
 
 
