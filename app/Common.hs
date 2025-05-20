@@ -5,24 +5,37 @@ import Control.Applicative (Alternative(..))
 type Name = String
 data Def = Def { defMatches :: [Match] } deriving Show
 
-data Match = Match
+data Match = Match  
     { matchName :: Name
     , matchPats :: [Pat]
     , matchRhs  :: Expr
-    }
+    }deriving Show
 
 infixl 9 :$
 data Expr
     = Var Name
     | Con Name
     | Expr :$ Expr
-data Pat = PVar Name | PApp Name [Pat]
+data Pat = PVar Name | PApp Name [Pat] deriving Show
 
 type DefMap = Map.Map Name Def
 type ExprMap = Map.Map Name Expr
 
-steps :: Int
+
+steps, internal_steps :: Int
 steps = 29
+internal_steps = 29
+
+-- State description
+
+data StateDesc = StateDesc
+  { state     :: Loc
+  , history   :: SnocList Loc
+  , fuel      :: Int
+  , internal  :: Bool
+  , defs      :: DefMap
+  , args      :: Int
+  }
 
 
 instance Show Expr where
@@ -30,6 +43,7 @@ instance Show Expr where
     showsPrec _ (Con name) = showString name
     showsPrec p (e1 :$ e2) =
         showParen (p > 10) (showsPrec 9 e1 . showString " " . showsPrec 11 e2)
+
 
 
 -- Inputs Match list into Map checking for duplicates of main and different parameter number.
@@ -49,9 +63,7 @@ matchToMap lst = foldr change Map.empty lst
                           ++ " have different number of arguments.")
 
 
-
 -- SnocList definitions.
-
 newtype SnocList a = SnocList {unSnocList :: [a]}
 
 toList :: SnocList a -> [a]
@@ -133,12 +145,19 @@ showLoc (e, c) = unwrap c (showString "{" . shows e . showString "}") False
 
 
 -- TEMP SECTION ------------------------------------------------------------------------
-instance Show Pat where
-    show (PVar name) = name
-    show (PApp name pats) =
-        name ++ "(" ++ unwords (name : map show pats) ++ ")"
 
-instance Show Match where
-    show (Match name pats rhs) =
-        name ++ " " ++ unwords (map show pats) ++ " = " ++ show rhs
--- TEMP SECTION ------------------------------------------------------------------------
+
+
+-- instance Show Pat where
+--   show (PVar name) = name
+--   show (PApp con pats) =
+--     case pats of
+--       [] -> con ++ " [name] "
+--       _  -> con ++ "!(" ++ unwords (con : map show pats) ++ ")!"
+      
+-- instance Show Def where
+--   show (Def matches) = unlines (map showMatch matches)
+--     where
+--       showMatch (Match name pats rhs) =
+--         name ++ "chuj " ++ unwords (map show pats) ++ " = " ++ show rhs
+-- -- TEMP SECTION ------------------------------------------------------------------------

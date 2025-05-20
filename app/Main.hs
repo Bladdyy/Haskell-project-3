@@ -27,15 +27,18 @@ main = do
                    Nothing -> error "ERROR: No comibnator named main."
                    Just (Def [Match _ _ expr]) ->
                       let x = fromList [(Var "main", Top)]
-                          y = snoc x (expr, Top)
-                          v = snoc y (left (expr, Top))
+                          y = snoc x ((Con "S") :$ expr, Top)
+                          v = snoc y (left ((Con "S") :$ (Con "S") :$ expr, Top))
                           g = snoc v (left(right (expr, Top)))
                           z = snoc g (right(right (expr, Top)))
 
                       in
-                      print (fmap showLoc z)
-                          -- do
-                          --   mapM_ print out
-                          --   putStrLn "------------------------------------------------------------"
-                          --   print expr
-                          --   iterateSteps steps expr mapping
+                      -- print "Dupa"
+                      -- print (fmap showLoc z)
+                      -- print (checkPattern (Con "S" :$ Con "Z" :$ Var "x") (PVar "a") Map.empty)
+
+                      print (checkPattern (Con "S" :$ Con "S" :$ Con "Z" :$ Var "x") (PApp "S" [PVar "a"]) Map.empty)
+
+
+
+
