@@ -3,20 +3,20 @@ import qualified Data.Map as Map
 import Control.Applicative (Alternative(..))
 
 type Name = String
-data Def = Def { defMatches :: [Match] } deriving Show
+data Def = Def { defMatches :: [Match] }
 
 data Match = Match  
     { matchName :: Name
     , matchPats :: [Pat]
     , matchRhs  :: Expr
-    }deriving Show
+    }
 
 infixl 9 :$
 data Expr
     = Var Name
     | Con Name
     | Expr :$ Expr
-data Pat = PVar Name | PApp Name [Pat] deriving Show
+data Pat = PVar Name | PApp Name [Pat]
 
 type DefMap = Map.Map Name Def
 type ExprMap = Map.Map Name Expr
@@ -25,7 +25,6 @@ type ExprMap = Map.Map Name Expr
 steps, internal_steps :: Int
 steps = 29
 internal_steps = 15
-max_depth = 5
 
 -- State description
 
@@ -33,7 +32,7 @@ data StateDesc = StateDesc
   { state     :: Loc
   , history   :: SnocList Loc
   , fuel      :: Int
-  , depth     :: Int
+  , inner     :: Bool
   , defs      :: DefMap
   }
 
@@ -140,24 +139,3 @@ showLoc (e, c) = unwrap c (showString "{" . shows e . showString "}") False
     unwrap (R l ctx) s par = case par of
                               True -> unwrap ctx (shows l . showChar ' ' . showChar '(' . s . showChar ')') True
                               False -> unwrap ctx (shows l . showChar ' ' . s) True
-
-
-
-
--- TEMP SECTION ------------------------------------------------------------------------
-
-
-
--- instance Show Pat where
---   show (PVar name) = name
---   show (PApp con pats) =
---     case pats of
---       [] -> con ++ " [name] "
---       _  -> con ++ "!(" ++ unwords (con : map show pats) ++ ")!"
-      
--- instance Show Def where
---   show (Def matches) = unlines (map showMatch matches)
---     where
---       showMatch (Match name pats rhs) =
---         name ++ "chuj " ++ unwords (map show pats) ++ " = " ++ show rhs
--- -- TEMP SECTION ------------------------------------------------------------------------

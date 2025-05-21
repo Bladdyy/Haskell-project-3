@@ -19,25 +19,15 @@ main = do
       _   -> error "ERROR: Invalid arguments. Check out --help for more information."
     where
         run :: String -> IO ()
-        run path = do
-                 out <- fromHsString path
-                 let mapping = matchToMap out
-                 print mapping
-                 case Map.lookup "main" mapping of
-                   Nothing -> error "ERROR: No comibnator named main."
-                   Just (Def [Match _ _ expr]) ->
-                      let x = fromList [(Var "main", Top)]
-                          y = snoc x ((Con "S") :$ expr, Top)
-                          v = snoc y (left ((Con "S") :$ (Con "S") :$ expr, Top))
-                          g = snoc v (left(right (expr, Top)))
-                          z = snoc g (right(right (expr, Top)))
-
-                      in
-                      -- print "Dupa"
-                      -- print (fmap showLoc z)
-                      -- print (checkPattern (Con "S" :$ Con "Z" :$ Var "x") (PVar "a") Map.empty)
-
-                      print (checkPattern (Con "S" :$ (Con "S" :$ (Con "Z" :$ Var "x")) :$ Var "x") (PApp "S" [PApp "S" [PVar "x"], PVar "a"]) Map.empty)
+        run path = 
+          do
+           out <- fromHsString path
+           let mapping = matchToMap out
+           case Map.lookup "main" mapping of
+             Nothing -> error "ERROR: No comibnator named main."
+             Just (Def [Match _ _ expr]) -> 
+              perform_steps (StateDesc (expr, Top) (snoc mempty (expr, Top)) steps False mapping)
+                    
 
 
 
