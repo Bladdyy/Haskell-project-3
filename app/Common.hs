@@ -21,6 +21,8 @@ data Pat = PVar Name | PApp Name [Pat]
 type DefMap = Map.Map Name Def
 type ExprMap = Map.Map Name Expr
 
+start_state :: Name
+start_state = "main"
 
 steps, internal_steps :: Int
 steps = 29

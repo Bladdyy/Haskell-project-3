@@ -5,8 +5,15 @@ import Common
 -- Performs a step of reduction on given state.
 rstep :: StateDesc -> Int -> Maybe StateDesc
 -- If not beginning of expression.
+rstep (StateDesc (Con name :$ e2, ctx) his f inner mapping) args = 
+    case rstep (StateDesc (right (Con name :$ e2, ctx)) his f inner mapping) (args + 1) of
+      Nothing -> Nothing
+      Just (StateDesc loc his f inner mapping) -> Just (StateDesc (up loc) his f inner mapping)
+
 rstep (StateDesc (e1 :$ e2, ctx) his f inner mapping) args = 
     rstep (StateDesc (left (e1 :$ e2, ctx)) his f inner mapping) (args + 1)
+
+rstep (StateDesc (Con _, _) _ _ _ _) _ = Nothing
 
 -- Beginning of expression.
 rstep (StateDesc (Var name, ctx) his f inner mapping) args = 
@@ -112,13 +119,15 @@ checkPattern e pat maps = comp (expToLst e []) pat maps
   lstToExp e _ = e
 
 
-perform_steps (StateDesc loc his fuel inner mapping) = 
+performSteps (StateDesc loc his fuel inner mapping) = 
   case rstep (StateDesc loc his fuel inner mapping) 0 of
-    Nothing -> print (map showLoc (toList his))
+    Nothing -> printStory his
     Just (StateDesc o_loc o_his o_fuel _ _) -> 
       case o_fuel of
-        0 -> print (map showLoc (toList o_his))
-        _ -> perform_steps (StateDesc o_loc o_his o_fuel inner mapping)
+        0 -> printStory o_his
+        _ -> performSteps (StateDesc o_loc o_his o_fuel inner mapping)
 
 
+-- source for unlines: https://www.reddit.com/r/haskell/comments/msfnc6/printing_string_on_new_line/
+printStory history = putStrLn (unlines (map showLoc (toList history))) -- TODO CHANGE PRINT 
 

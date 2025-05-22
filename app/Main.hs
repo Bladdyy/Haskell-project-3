@@ -23,10 +23,10 @@ main = do
           do
            out <- fromHsString path
            let mapping = matchToMap out
-           case Map.lookup "main" mapping of
+           case Map.lookup start_state mapping of
              Nothing -> error "ERROR: No comibnator named main."
-             Just (Def [Match _ _ expr]) -> 
-              perform_steps (StateDesc (expr, Top) (snoc mempty (expr, Top)) steps False mapping)
+             _ -> performSteps (StateDesc (Var start_state, Top) 
+                                  (snoc mempty (Var start_state, Top)) steps False mapping)
                     
 
 
