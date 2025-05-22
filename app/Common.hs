@@ -25,7 +25,7 @@ start_state :: Name
 start_state = "main"
 
 steps, internal_steps :: Int
-steps = 29
+steps = 30
 internal_steps = 15
 
 -- State description

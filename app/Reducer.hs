@@ -20,7 +20,7 @@ rstep (StateDesc (Con _, _) _ _ _ _) _ = Nothing
 rstep (StateDesc (Var name, ctx) his f inner mapping) args = 
     -- Check for matches for this expression.
     case Map.lookup name mapping of
-        Just (Def (Match name pats expr:xs)) -> if length pats <= args then
+        Just (Def (Match name pats expr:xs)) -> if length pats <= args then trace (showLoc (Var name, ctx) ++ " CORE")
                       findReduce (StateDesc (Var name, ctx) his f inner mapping) (Match name pats expr:xs)
                   else Nothing
         -- No matches.
@@ -68,11 +68,11 @@ rstep (StateDesc (Var name, ctx) his f inner mapping) args =
       case rstep state 0 of
         Nothing -> trace (show pat ++ " 33 ")(Nothing, expr_map) 
         Just (StateDesc (new_arg, _) new_his new_f new_inner _) ->
-          case new_f of 
-            0 -> case checkPattern new_arg pat expr_map of
-                  (new_expr_mapping, True) -> trace (show pat ++ " 22 " ++ show new_expr_mapping ++ "  " ++ showLoc (new_arg, R e2 cxt)) (Just (StateDesc (up (new_arg, R e2 cxt)) new_his new_f new_inner mapping), new_expr_mapping)
-                  (_, False) -> trace (show pat ++ " 11 " ++ show new_arg) forceCheck (StateDesc (new_arg, R e2 cxt) new_his new_f new_inner mapping) pat expr_map
-            _ -> (Nothing, expr_map) 
+          case checkPattern new_arg pat expr_map of
+            (new_expr_mapping, True) -> trace (show pat ++ " 22 " ++ show new_expr_mapping ++ "  " ++ showLoc (new_arg, R e2 cxt)) (Just (StateDesc (up (new_arg, R e2 cxt)) new_his new_f new_inner mapping), new_expr_mapping)
+            (_, False) -> case new_f of
+                            0 -> (Nothing, expr_map) 
+                            _ -> trace (show pat ++ " 11 " ++ show new_arg) forceCheck (StateDesc (new_arg, R e2 cxt) new_his new_f new_inner mapping) pat expr_map
     
     -- Reduces given expression and adds new history.
     reduce :: StateDesc -> ExprMap -> Expr -> StateDesc                   
