@@ -6,21 +6,18 @@ import Debug.Trace
 -- Performs a step of reduction on given state.
 rstep :: StateDesc -> Int -> Maybe StateDesc
 -- If not beginning of expression.
-rstep (StateDesc (Con name :$ e2, ctx) his f inner mapping) args = 
-    case rstep (StateDesc (right (Con name :$ e2, ctx)) his f inner mapping) 0 of
-      Nothing -> trace (showLoc (right (Con name :$ e2, ctx)) ++ " " ++ show inner ++ " RIGHT") Nothing
-      Just (StateDesc loc his f inner mapping) -> Just (StateDesc (up loc) his f inner mapping)
+rstep (StateDesc (e1 :$ e2, ctx) his f inner mapping) args = 
+    case rstep (StateDesc (left (e1 :$ e2, ctx)) his f inner mapping) (args + 1) of
+      Nothing -> rstep (StateDesc (right (e1 :$ e2, ctx)) his f inner mapping) 0
+      Just (StateDesc loc his f inner mapping) -> Just (StateDesc loc his f inner mapping)
 
-rstep (StateDesc (e1 :$ e2, ctx) his f inner mapping) args = trace (showLoc (left (e1 :$ e2, ctx)) ++ " " ++ show inner ++ " LEFT") 
-    rstep (StateDesc (left (e1 :$ e2, ctx)) his f inner mapping) (args + 1)
-
-rstep (StateDesc (Con _, _) _ _ _ _) _ = Nothing
+rstep (StateDesc (Con name, ctx) his f inner mapping) args = Nothing
 
 -- Beginning of expression.
 rstep (StateDesc (Var name, ctx) his f inner mapping) args = 
     -- Check for matches for this expression.
     case Map.lookup name mapping of
-        Just (Def (Match name pats expr:xs)) -> if length pats <= args then trace (showLoc (Var name, ctx) ++ " CORE")
+        Just (Def (Match name pats expr:xs)) -> if length pats <= args then trace (showLoc (Var name, ctx) ++ "   " ++ show inner ++  " CORE")
                       findReduce (StateDesc (Var name, ctx) his f inner mapping) (Match name pats expr:xs)
                   else Nothing
         -- No matches.
@@ -62,17 +59,17 @@ rstep (StateDesc (Var name, ctx) his f inner mapping) args =
     forceCheck :: StateDesc -> Pat -> ExprMap -> (Maybe StateDesc, ExprMap)
     forceCheck (StateDesc (e1, R e2 cxt) his f inner mapping) pat expr_map = 
       let state = if not inner 
-          then StateDesc (e1, R e2 cxt) mempty internal_steps True mapping
-          else StateDesc (e1, R e2 cxt) his f inner mapping
+          then trace (show e1 ++ " in force") StateDesc (e1, R e2 cxt) mempty internal_steps True mapping
+          else trace (show e1 ++ " in force inner " ++ show e2) StateDesc (e1, R e2 cxt) his f inner mapping
       in
       case rstep state 0 of
         Nothing -> trace (show pat ++ " 33 ")(Nothing, expr_map) 
-        Just (StateDesc (new_arg, _) new_his new_f new_inner _) ->
+        Just (StateDesc (new_arg, new_cxt) new_his new_f new_inner _) ->
           case checkPattern new_arg pat expr_map of
-            (new_expr_mapping, True) -> trace (show pat ++ " 22 " ++ show new_expr_mapping ++ "  " ++ showLoc (new_arg, R e2 cxt)) (Just (StateDesc (up (new_arg, R e2 cxt)) new_his new_f new_inner mapping), new_expr_mapping)
+            (new_expr_mapping, True) -> trace (show pat ++ " 22 " ++ show new_expr_mapping ++ "  " ++ showLoc (new_arg, new_cxt)) (Just (StateDesc (up (new_arg, new_cxt)) new_his new_f new_inner mapping), new_expr_mapping)
             (_, False) -> case new_f of
                             0 -> (Nothing, expr_map) 
-                            _ -> trace (show pat ++ " 11 " ++ show new_arg) forceCheck (StateDesc (new_arg, R e2 cxt) new_his new_f new_inner mapping) pat expr_map
+                            _ -> trace (show pat ++ " 11 " ++ show new_arg ++ "   " ++ show (new_cxt)) forceCheck (StateDesc (new_arg, new_cxt) new_his new_f new_inner mapping) pat expr_map
     
     -- Reduces given expression and adds new history.
     reduce :: StateDesc -> ExprMap -> Expr -> StateDesc                   
@@ -90,7 +87,7 @@ rstep (StateDesc (Var name, ctx) his f inner mapping) args =
 
     move_up :: StateDesc -> StateDesc
     move_up (StateDesc (ex, L a b) his f inner mapping) = move_up (StateDesc (up (ex, L a b)) his f inner mapping)
-    move_up state = state
+    move_up (StateDesc loc his f inner mapping)  = trace ("!!!!!!!!!!  " ++ showLoc loc)(StateDesc loc his f inner mapping)
 
 -- Checks if pattern matches for expr. If the pattern is correct: passes correct mapping.  TODO (maybe change it into zipper.)
 
@@ -127,7 +124,7 @@ performSteps (StateDesc loc his fuel inner mapping) =
     Just (StateDesc o_loc o_his o_fuel _ _) -> 
       case o_fuel of
         0 -> printStory o_his
-        _ -> trace ("next move " ++ show o_fuel ++ "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") performSteps (StateDesc o_loc o_his o_fuel inner mapping)
+        _ -> trace ("next move " ++ showLoc (getTop o_loc) ++ "  " ++ show o_fuel ++ "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") performSteps (StateDesc (getTop o_loc) o_his o_fuel inner mapping)
 
 
 -- source for unlines: https://www.reddit.com/r/haskell/comments/msfnc6/printing_string_on_new_line/

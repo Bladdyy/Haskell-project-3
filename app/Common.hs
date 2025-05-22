@@ -119,6 +119,8 @@ up (e, L c r) = (e :$ r, c)
 up (e, R l c) = (l :$ e, c)
 up loc = loc
 
+getTop (e, Top) = (e, Top)
+getTop loc = getTop (up loc)
 
 getCxt :: Loc -> Cxt
 getCxt l = snd l
