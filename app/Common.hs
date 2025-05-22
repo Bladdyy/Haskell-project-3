@@ -3,20 +3,20 @@ import qualified Data.Map as Map
 import Control.Applicative (Alternative(..))
 
 type Name = String
-data Def = Def { defMatches :: [Match] }
+data Def = Def { defMatches :: [Match] } deriving Show
 
-data Match = Match  
+data Match = Match 
     { matchName :: Name
     , matchPats :: [Pat]
     , matchRhs  :: Expr
-    }
+    }deriving Show
 
 infixl 9 :$
 data Expr
     = Var Name
     | Con Name
     | Expr :$ Expr
-data Pat = PVar Name | PApp Name [Pat]
+data Pat = PVar Name | PApp Name [Pat] deriving Show
 
 type DefMap = Map.Map Name Def
 type ExprMap = Map.Map Name Expr
@@ -36,7 +36,7 @@ data StateDesc = StateDesc
   , fuel      :: Int
   , inner     :: Bool
   , defs      :: DefMap
-  }
+  } deriving Show
 
 
 instance Show Expr where
@@ -101,7 +101,7 @@ instance Alternative SnocList where
 
 -- Expr Zipper
 
-data Cxt = Top | L Cxt Expr | R Expr Cxt
+data Cxt = Top | L Cxt Expr | R Expr Cxt deriving Show
 
 type Loc = (Expr, Cxt)
 
