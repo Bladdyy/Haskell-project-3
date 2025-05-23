@@ -1,0 +1,13 @@
+two = S (S Z)
+add Z n = n
+add (S S m) n = S (add m n)
+add (W m) n = S (add m n)
+main = add two two
+------------------------------------------------------------
+-- Brak dopasowania
+{-
+{main}
+{add two two}
+add {S (S Z)} two
+add (S (S Z)) {S (S Z)}
+-}

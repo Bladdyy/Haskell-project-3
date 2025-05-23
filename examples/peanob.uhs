@@ -1,0 +1,36 @@
+s x y z = x z (y z)
+k x y = x
+b x y z = x(y z)
+bb = s (k s) k
+i = s k k
+suc = s b
+two = s b i
+tre = suc two
+fyr = b two two
+main = fyr a b
+
+------------------------------------------------------------
+{-
+{main}
+{fyr a b}
+{b two two} a b
+{two (two a)} b
+{s b i} (two a) b
+{b (two a) (i (two a))} b
+{two a (i (two a) b)}
+{s b i} a (i (two a) b)
+{b a (i a)} (i (two a) b)
+{a (i a (i (two a) b))}
+a ({s k k} a (i (two a) b))
+a ({k a (k a)} (i (two a) b))
+a ({a} (i (two a) b))
+a (a ({s k k} (two a) b))
+a (a ({k (two a) (k (two a))} b))
+a (a ({two a} b))
+a (a ({s b i} a b))
+a (a ({b a (i a)} b))
+a (a {a (i a b)})
+a (a (a ({s k k} a b)))
+a (a (a ({k a (k a)} b)))
+a (a (a ({a} b)))
+-}

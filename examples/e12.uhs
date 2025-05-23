@@ -1,0 +1,25 @@
+f (S (S (S (S S)))) (S (S (S (S S)))) = A
+
+nested0 = S (nested1)
+nested1 = S (nested2)
+nested2 = S (nested3)
+nested3 = S (nested4)
+nested4 = S
+
+main = f nested0 nested0
+------------------------------------------------------------
+{-
+{main}
+{f nested0 nested0}
+f {S nested1} nested0
+f (S {S nested2}) nested0
+f (S (S {S nested3})) nested0
+f (S (S (S {S nested4}))) nested0
+f (S (S (S (S {S})))) nested0
+f (S (S (S (S S)))) {S nested1}
+f (S (S (S (S S)))) (S {S nested2})
+f (S (S (S (S S)))) (S (S {S nested3}))
+f (S (S (S (S S)))) (S (S (S {S nested4})))
+f (S (S (S (S S)))) (S (S (S (S {S}))))
+{A}
+-}

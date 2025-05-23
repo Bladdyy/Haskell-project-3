@@ -1,0 +1,39 @@
+zero = Z
+one = S zero
+two = S one
+three = S two
+
+add Z n = n
+add (S m) n = S (add m n)
+
+mul Z n = Z
+mul (S m) n = add n (mul m n)
+
+main = mul two three
+------------------------------------------------------------
+{-
+{main}
+{mul two three}
+mul {S one} three
+{add three (mul one three)}
+add {S two} (mul one three)
+{S (add two (mul one three))}
+S (add {S one} (mul one three))
+S {S (add one (mul one three))}
+S (S (add {S zero} (mul one three)))
+S (S {S (add zero (mul one three))})
+S (S (S (add {Z} (mul one three))))
+S (S (S {mul one three}))
+S (S (S (mul {S zero} three)))
+S (S (S {add three (mul zero three)}))
+S (S (S (add {S two} (mul zero three))))
+S (S (S {S (add two (mul zero three))}))
+S (S (S (S (add {S one} (mul zero three)))))
+S (S (S (S {S (add one (mul zero three))})))
+S (S (S (S (S (add {S zero} (mul zero three))))))
+S (S (S (S (S {S (add zero (mul zero three))}))))
+S (S (S (S (S (S (add {Z} (mul zero three)))))))
+S (S (S (S (S (S {mul zero three})))))
+S (S (S (S (S (S (mul {Z} three))))))
+S (S (S (S (S (S {Z})))))
+-}

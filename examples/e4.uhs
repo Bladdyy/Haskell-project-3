@@ -1,0 +1,11 @@
+f (S (S x)) = x
+f x = x
+
+main = f (S (S (S Z)))
+------------------------------------------------------------
+-- Check first function first
+{-
+{main}
+{f (S (S (S Z)))}
+{S Z}
+-}

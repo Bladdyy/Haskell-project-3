@@ -1,0 +1,8 @@
+swap (Pair x y) = Pair y x
+main = swap (Pair (S Z) Z)
+------------------------------------------------------------
+{-
+{main}
+{swap (Pair (S Z) Z)}
+{Pair Z (S Z)}
+-}

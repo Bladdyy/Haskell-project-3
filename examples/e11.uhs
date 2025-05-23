@@ -1,0 +1,51 @@
+zero = Z
+one = S zero
+two = S one
+three = S two
+
+expr1 = Add (Val two) (Mul (Val one) (Val three))
+
+-- eval (Val n)     = n
+-- eval (Add x y)   = add (eval x) (eval y)
+-- eval (Mul x y)   = mul (eval x) (eval y)
+
+eval (Val n) = n
+eval (Add x y) = add (eval x) (eval y)
+eval (Mul x y) = mul (eval x) (eval y)
+
+add Z n = n
+add (S m) n = S (add m n)
+
+mul Z n = Z
+mul (S m) n = add n (mul m n)
+
+main = eval expr1
+------------------------------------------------------------
+{-
+{main}
+{eval expr1}
+eval {Add (Val two) (Mul (Val one) (Val three))}
+{add (eval (Val two)) (eval (Mul (Val one) (Val three)))}
+add {two} (eval (Mul (Val one) (Val three)))
+add {S one} (eval (Mul (Val one) (Val three)))
+{S (add one (eval (Mul (Val one) (Val three))))}
+S (add {S zero} (eval (Mul (Val one) (Val three))))
+S {S (add zero (eval (Mul (Val one) (Val three))))}
+S (S (add {Z} (eval (Mul (Val one) (Val three)))))
+S (S {eval (Mul (Val one) (Val three))})
+S (S {mul (eval (Val one)) (eval (Val three))})
+S (S (mul {one} (eval (Val three))))
+S (S (mul {S zero} (eval (Val three))))
+S (S {add (eval (Val three)) (mul zero (eval (Val three)))})
+S (S (add {three} (mul zero (eval (Val three)))))
+S (S (add {S two} (mul zero (eval (Val three)))))
+S (S {S (add two (mul zero (eval (Val three))))})
+S (S (S (add {S one} (mul zero (eval (Val three))))))
+S (S (S {S (add one (mul zero (eval (Val three))))}))
+S (S (S (S (add {S zero} (mul zero (eval (Val three)))))))
+S (S (S (S {S (add zero (mul zero (eval (Val three))))})))
+S (S (S (S (S (add {Z} (mul zero (eval (Val three))))))))
+S (S (S (S (S {mul zero (eval (Val three))}))))
+S (S (S (S (S (mul {Z} (eval (Val three)))))))
+S (S (S (S (S {Z}))))
+-}

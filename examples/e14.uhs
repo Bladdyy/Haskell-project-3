@@ -1,0 +1,39 @@
+loop x = loop x
+f Z = A
+main = f (loop Z)
+
+--------------------------------------
+{-
+{main}
+{f (loop Z)}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+f {loop Z}
+...
+-}

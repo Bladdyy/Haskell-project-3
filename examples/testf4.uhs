@@ -1,0 +1,11 @@
+s x y z = x z (y z)
+k x y = x
+i = s k k
+om x = x x
+omega = om om
+main a = k i omega a
+
+------------------------------------------------------------
+{-
+zadanie3: ERROR: main can't have parameters.
+-}
