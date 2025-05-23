@@ -1,15 +1,11 @@
-s x y z = x z (y z)
+s x y x = x x (y x)
 k x y = x
 i = s k k
 om x = x x
 omega = om om
-main = k i omega b
+main = k i omega Z
 
 ------------------------------------------------------------
 {-
-k i omega b
-i b
-s k k b
-k b (k b)
-b
+Error: Combinator s has arguments with the same name: "x"
 -}

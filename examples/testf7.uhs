@@ -2,14 +2,11 @@ s x y z = x z (y z)
 k x y = x
 i = s k k
 om x = x x
-omega = om om
-main = k i omega b
+omega =
+main = k i omega a
+
 
 ------------------------------------------------------------
 {-
-k i omega b
-i b
-s k k b
-k b (k b)
-b
+Error: Parse error
 -}

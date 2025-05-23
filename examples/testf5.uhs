@@ -2,14 +2,12 @@ s x y z = x z (y z)
 k x y = x
 i = s k k
 om x = x x
+main = k i omega a
 omega = om om
-main = k i omega b
+main = k i omega a
+
 
 ------------------------------------------------------------
 {-
-k i omega b
-i b
-s k k b
-k b (k b)
-b
+'main' not declared exactly once
 -}

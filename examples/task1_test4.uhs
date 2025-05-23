@@ -1,0 +1,21 @@
+s x y z = x z (y z)
+b x y z = x (y z)
+i x = x
+main = b s (b b) (s b i) (s b (s b i)) x z
+
+------------------------------------------------------------
+{-
+b s (b b) (s b i) (s b (s b i)) x z
+s (b b (s b i)) (s b (s b i)) x z
+b b (s b i) x (s b (s b i) x) z
+b (s b i x) (s b (s b i) x) z
+s b i x (s b (s b i) x z)
+b x (i x) (s b (s b i) x z)
+x (i x (s b (s b i) x z))
+x (x (s b (s b i) x z))
+x (x (b x (s b i x) z))
+x (x (x (s b i x z)))
+x (x (x (b x (i x) z)))
+x (x (x (x (i x z))))
+x (x (x (x (x z))))
+-}

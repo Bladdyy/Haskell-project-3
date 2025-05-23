@@ -1,0 +1,14 @@
+s x y z = x z (y z)
+b x y z = x (y z)
+i x = x
+main = s b (s b i) x z
+
+------------------------------------------------------------
+{-
+s b (s b i) x z
+b x (s b i x) z
+x (s b i x z)
+x (b x (i x) z)
+x (x (i x z))
+x (x (x z))
+-}

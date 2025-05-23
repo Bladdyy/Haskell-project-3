@@ -1,10 +1,8 @@
-s x y z = x z (y z)
-k x y = x
-main = s k k x
+a b = case b of
+	_ -> b
+main = B
 
 ------------------------------------------------------------
 {-
-s k k x
-k x (k x)
-x
+Parse error
 -}

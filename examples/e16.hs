@@ -1,0 +1,27 @@
+inf = S inf
+add Z n = n
+add (S m) n = S (add m n)
+main = add inf Z
+------------------------------------------------------------
+{-
+{main}
+{add inf Z}
+add {inf} Z
+add {S inf} Z
+{S (add inf Z)}
+S (add {inf} Z)
+S (add {S inf} Z)
+S {S (add inf Z)}
+S (S (add {inf} Z))
+S (S (add {S inf} Z))
+S (S {S (add inf Z)})
+S (S (S (add {inf} Z)))
+S (S (S (add {S inf} Z)))
+S (S (S {S (add inf Z)}))
+S (S (S (S (add {inf} Z))))
+S (S (S (S (add {S inf} Z))))
+S (S (S (S {S (add inf Z)})))
+S (S (S (S (S (add {inf} Z)))))
+S (S (S (S (S (add {S inf} Z)))))
+S (S (S (S (S {S (add inf Z)}))))
+-}

@@ -3,13 +3,9 @@ k x y = x
 i = s k k
 om x = x x
 omega = om om
-main = k i omega b
+main a = k i omega a
 
 ------------------------------------------------------------
 {-
-k i omega b
-i b
-s k k b
-k b (k b)
-b
+'main' has arguments
 -}

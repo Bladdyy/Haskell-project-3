@@ -1,10 +1,10 @@
-s x y z = x z (y z)
 k x y = x
-main = s k k x
+i x = x
+s x y z = x z (y z)
+main = k i (s i i (s i i))
 
 ------------------------------------------------------------
 {-
-s k k x
-k x (k x)
-x
+k i (s i i (s i i))
+i
 -}
