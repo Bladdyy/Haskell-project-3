@@ -66,7 +66,7 @@ fromHsString path = do
 
         -- Extracts expression from HsExp.
         extractExpr :: HsExp -> Expr
-        extractExpr (HsApp left right) = extractExpr left :$ extractExpr right
+        extractExpr (HsApp left' right') = extractExpr left' :$ extractExpr right'
         extractExpr (HsVar (UnQual (HsIdent name))) = Var name
         extractExpr (HsCon (UnQual (HsIdent name))) = Con name
         extractExpr (HsParen var) = extractExpr var

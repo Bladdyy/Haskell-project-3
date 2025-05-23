@@ -53,8 +53,7 @@ matchToMap lst = foldr change Map.empty lst
     where
     change (Match name pats expr) mapping = 
         case Map.lookup name mapping of
-          Nothing -> Map.insert name (Def [Match name pats expr]) mapping
-          Just (Def (Match name' pats' expr':xs)) -> 
+          Just (Def (Match _ pats' expr':xs)) -> 
                 if name == "main" then
                   error "ERROR: Multiple definitions of main."
                 else if length pats == length pats' then
@@ -62,6 +61,8 @@ matchToMap lst = foldr change Map.empty lst
                 else
                   error ("ERROR: Multiple definitions of " ++ name 
                           ++ " have different number of arguments.")
+          _ -> Map.insert name (Def [Match name pats expr]) mapping
+
 
 
 -- SnocList definitions.
@@ -119,6 +120,7 @@ up (e, L c r) = (e :$ r, c)
 up (e, R l c) = (l :$ e, c)
 up loc = loc
 
+getTop :: Loc -> Loc
 getTop (e, Top) = (e, Top)
 getTop loc = getTop (up loc)
 
