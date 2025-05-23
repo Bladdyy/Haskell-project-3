@@ -3,20 +3,20 @@ import qualified Data.Map as Map
 import Control.Applicative (Alternative(..))
 
 type Name = String
-data Def = Def { defMatches :: [Match] } deriving Show
+data Def = Def { defMatches :: [Match] }
 
 data Match = Match 
     { matchName :: Name
     , matchPats :: [Pat]
     , matchRhs  :: Expr
-    }deriving Show
+    }
 
 infixl 9 :$
 data Expr
     = Var Name
     | Con Name
     | Expr :$ Expr
-data Pat = PVar Name | PApp Name [Pat] deriving Show
+data Pat = PVar Name | PApp Name [Pat]
 
 type DefMap = Map.Map Name Def
 type ExprMap = Map.Map Name Expr
@@ -36,7 +36,7 @@ data StateDesc = StateDesc
   , fuel      :: Int
   , inner     :: Bool
   , defs      :: DefMap
-  } deriving Show
+  }
 
 
 instance Show Expr where
@@ -101,7 +101,7 @@ instance Alternative SnocList where
 
 -- Expr Zipper
 
-data Cxt = Top | L Cxt Expr | R Expr Cxt deriving Show
+data Cxt = Top | L Cxt Expr | R Expr Cxt
 
 type Loc = (Expr, Cxt)
 
@@ -132,14 +132,17 @@ getExpr loc = getExpr (up loc)
 modifyHere :: (Expr -> Expr) -> Loc -> Loc
 modifyHere f (e, c) = (f e, c) 
 
+-- Prints Zipper instance in proper format.
 showLoc :: Loc -> String
 showLoc (e, c) = unwrap c (showString "{" . shows e . showString "}") False
   where
     unwrap :: Cxt -> ShowS -> Bool -> String
     unwrap Top s _ = s ""
-    unwrap (L ctx r) s _ = case r of
-                              _ :$ _ -> unwrap ctx (s . showString " (" . shows r . showChar ')') True
-                              _ -> unwrap ctx (s . showChar ' ' . shows r) True
-    unwrap (R l ctx) s par = case par of
-                              True -> unwrap ctx (shows l . showChar ' ' . showChar '(' . s . showChar ')') True
-                              False -> unwrap ctx (shows l . showChar ' ' . s) True
+    unwrap (L ctx r) s _ = 
+      case r of
+        _ :$ _ -> unwrap ctx (s . showString " (" . shows r . showChar ')') True
+        _ -> unwrap ctx (s . showChar ' ' . shows r) True
+    unwrap (R l ctx) s par = 
+      case par of
+        True -> unwrap ctx (shows l . showChar ' ' . showChar '(' . s . showChar ')') True
+        False -> unwrap ctx (shows l . showChar ' ' . s) True
