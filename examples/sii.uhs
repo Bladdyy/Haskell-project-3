@@ -1,3 +1,0 @@
-s x y z = x z (y z)
-i x = x
-main = s i i Foo
