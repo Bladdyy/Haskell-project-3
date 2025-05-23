@@ -1,7 +1,8 @@
 module Reducer where
 import qualified Data.Map as Map
-import Common
 import Data.List (intercalate)
+import Common
+
 
 -- Performs a step of reduction on given state.
 rstep :: StateDesc -> Int -> Maybe StateDesc
@@ -42,7 +43,7 @@ rstep (StateDesc (Var nam, ctx) hi fu ir ma) args =
     -- Checks every parameter in pattern with corresponding expression.
     matchPat :: StateDesc -> [Pat] -> Expr -> ExprMap -> (Maybe StateDesc, ExprMap)
     matchPat (StateDesc (e1', L cxt' e2') hi' fu' ir' ma') (pat':ps') eres' emap' =
-      case checkPattern e2' pat' emap' of
+      case checkPattern (e2', Top) pat' emap' 0 of
       -- Incorrect matching. Reduce argument expression if possible then check again.
         (_, False) -> 
           case forceCheck (StateDesc (right (up (e1', L cxt' e2'))) hi' fu' ir' ma') pat' emap' of
@@ -83,7 +84,7 @@ rstep (StateDesc (Var nam, ctx) hi fu ir ma) args =
         -- Reduction was succesful. 
         Just (StateDesc (new_arg', new_cxt') new_his' new_f' new_inner' _) ->
           -- Check if fits after reduction.
-          case checkPattern new_arg' pat' emap' of
+          case checkPattern (new_arg', Top) pat' emap' 0 of
             -- Reduced argument fits parameter pattern.
             (new_expr_mapping, True) -> (Just (StateDesc (up (new_arg', new_cxt')) 
                                               new_his' new_f' new_inner' ma'), new_expr_mapping)
@@ -119,38 +120,31 @@ rstep (StateDesc (Var nam, ctx) hi fu ir ma) args =
                                                               hi' fu' ir' ma')
     move_up state' = state'
 
+
 -- Checks if pattern matches for expr. If the pattern is correct: passes correct mapping.
-checkPattern :: Expr -> Pat -> ExprMap -> (ExprMap, Bool)
-checkPattern e pat maps = comp (expToLst e []) pat maps
+checkPattern :: Loc -> Pat -> ExprMap -> Int -> (ExprMap, Bool)
+checkPattern (e1 :$ e2, ctx) pat maps args = checkPattern (left (e1 :$ e2, ctx)) pat maps (args + 1)
+checkPattern e pat maps args = comp e pat maps args
   where
   -- Compares one parameter with expression.
-  comp :: [Expr] -> Pat -> ExprMap -> (ExprMap, Bool) 
+  comp :: Loc -> Pat -> ExprMap -> Int -> (ExprMap, Bool) 
   -- If Con then check if name and number of arguments are the same.
-  comp (Con ex:es) (PApp name lst) mapping = if ex == name && length es == length lst 
+  comp (Con ex, ctx') (PApp name lst) mapping args' = if ex == name && args' == length lst 
                                             -- Compare arguments.
-                                            then compLsts es lst mapping
+                                            then compLsts (up (Con ex, ctx')) lst mapping
                                             -- No match.
                                             else (mapping, False)
   -- If Var then map whole expression to it.
-  comp (x:xs) (PVar name) mapping = (Map.insert name (lstToExp x xs) mapping, True)
-  comp _ _ mapping = (mapping, False) 
+  comp ex (PVar name) mapping _ = (Map.insert name (getExpr ex) mapping, True)
+  comp _ _ mapping _ = (mapping, False) 
 
   -- Compares a whole list of parameters inside of a parameter.
-  compLsts :: [Expr] -> [Pat] -> ExprMap -> (ExprMap, Bool)
-  compLsts (x:xs) (y:ys) mapping = case checkPattern x y mapping of 
+  compLsts :: Loc -> [Pat] -> ExprMap -> (ExprMap, Bool)
+  compLsts (ex :$ es, ctx') (y:ys) mapping = case checkPattern (es, Top) y mapping 0 of 
                                (new_mapping, False) -> (new_mapping, False)
-                               (new_mapping, True) -> compLsts xs ys new_mapping
+                               (new_mapping, True) -> compLsts (up (ex :$ es, ctx')) ys new_mapping
   compLsts _ _ mapping = (mapping, True)
 
-  -- Changes Expr to list.
-  expToLst :: Expr -> [Expr] -> [Expr]
-  expToLst (e1 :$ e2) lst = expToLst e1 (e2:lst)
-  expToLst ex lst = ex:lst
-
-  -- Changes list into Expr.
-  lstToExp :: Expr -> [Expr] -> Expr
-  lstToExp e0 (e1:e2) = lstToExp (e0 :$ e1) e2
-  lstToExp ex _ = ex
 
 
 -- Performs steps until there are no reductions or there is no fuel left.

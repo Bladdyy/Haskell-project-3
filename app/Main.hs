@@ -1,5 +1,6 @@
 module Main where
 import qualified Data.Map as Map
+import Data.List (intercalate)
 import System.Directory (doesFileExist)
 import System.Environment (getArgs)
 import Reducer
@@ -25,7 +26,10 @@ main = do
            let mapping = matchToMap out
            case Map.lookup start_state mapping of
              Nothing -> error "ERROR: No comibnator named main."
-             _ -> performSteps (StateDesc (Var start_state, Top) 
+             _ -> do
+                    putStrLn (intercalate "\n" (map show out))
+                    putStrLn "------------------------------------------------------------"
+                    performSteps (StateDesc (Var start_state, Top) 
                                   (snoc mempty (Var start_state, Top)) steps False mapping)
                     
 

@@ -39,12 +39,24 @@ data StateDesc = StateDesc
   }
 
 
+instance Show Pat where
+  showsPrec _ (PVar name) = showString name
+  showsPrec _ (PApp name []) = showString name
+  showsPrec _ (PApp name (p:ps)) =
+    showChar '(' . showString name . showChar ' ' . shows p 
+      . foldr (\x acc -> showChar ' ' . shows x . acc) (showString ")") ps
+
+instance Show Match where
+  showsPrec _ (Match name pats expr) =
+    showString name . foldr (\p acc -> showChar ' ' . shows p . acc) id pats
+     . showString " = " . shows expr
+
+
 instance Show Expr where
     showsPrec _ (Var name) = showString name
     showsPrec _ (Con name) = showString name
     showsPrec p (e1 :$ e2) =
         showParen (p > 10) (showsPrec 9 e1 . showString " " . showsPrec 11 e2)
-
 
 
 -- Inputs Match list into Map checking for duplicates of main and different parameter number.
