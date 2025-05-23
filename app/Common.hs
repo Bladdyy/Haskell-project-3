@@ -44,7 +44,7 @@ instance Show Pat where
   showsPrec _ (PApp name []) = showString name
   showsPrec _ (PApp name (p:ps)) =
     showChar '(' . showString name . showChar ' ' . shows p 
-      . foldr (\x acc -> showChar ' ' . shows x . acc) (showString ")") ps
+      . foldr (\x acc -> showChar ' ' . shows x . acc) (showChar ')') ps
 
 instance Show Match where
   showsPrec _ (Match name pats expr) =
